@@ -180,7 +180,7 @@ public class BioSystem {
         int nPoints = 10, nReps = 20;
         int L = 500;
         double duration = 500.;
-        String filename = "slowGrowers_nutrients_vs_antibiotic-contourPlot-FINAL";
+        String filename = "simple-slowGrowers_nutrients_vs_antibiotic-contourPlot-FINAL";
         char token =  'c';
 
         ArrayList<Double> sVals = new ArrayList<Double>();
@@ -225,7 +225,7 @@ public class BioSystem {
         int nPoints = 10, nReps = 20;
         int L = 500;
         double duration = 500.;
-        String filename = "slowGrowers_nutrients_vs_exponential-antibiotic-contourPlot-FINAL";
+        String filename = "simple-slowGrowers_nutrients_vs_exponential-antibiotic-contourPlot-FINAL";
 
         ArrayList<Double> sVals = new ArrayList<Double>();
         ArrayList<Double> alphaVals = new ArrayList<Double>();
@@ -268,22 +268,35 @@ public class BioSystem {
 
         int L = 500, nReps = 20;
         int nTimeMeasurements = 20;
+
         double duration = 2000., interval = duration/(double)nTimeMeasurements;
+        double preciseDuration = duration/5., preciseInterval = preciseDuration/(double)nTimeMeasurements;
+
         int S = 500;
         double smallestC = 0., largestC = 12.;
 
-        String filename = "slowGrowers-linearGradient-spatialDistribution-FINAL";
-        String filename_gRate = "slowGrowers-linearGradient-gRateDistribution-FINAL";
+        String filename = "simple-slowGrowers-linearGradient-spatialDistribution-FINAL";
+        String filename_gRate = "simple-slowGrowers-linearGradient-gRateDistribution-FINAL";
+        String filename_precise = "simple-slowGrowers-linearGradient-spatialDistribution_precise-FINAL";
+        String filename_gRate_precise = "simple-slowGrowers-linearGradient-gRateDistribution_precise-FINAL";
 
         int[][][] allMeasurements = new int[nReps][][];
         double[][][] allGRateMeasurements = new double[nReps][][];
+        int[][][] allPreciseMeasurements = new int[nReps][][];
+        double[][][] allPreciseGRateMeasurements = new double[nReps][][];
+
 
         for(int r = 0; r < nReps; r++){
 
-            boolean alreadyRecorded = false;
+            boolean alreadyRecorded = false, alreadyPreciselyRecorded = false;
+
             int[][] popsOverTime = new int[nTimeMeasurements+1][];
             double[][] gRatesOverTime = new double[nTimeMeasurements+1][];
             int timerCounter = 0;
+
+            int[][] precisePopsOverTime = new int[nTimeMeasurements+1][];
+            double[][] preciseGRatesOverTime = new double[nTimeMeasurements+1][];
+            int preciseTimerCounter = 0;
 
             BioSystem bs = new BioSystem(L, S, smallestC, largestC);
 
@@ -291,6 +304,20 @@ public class BioSystem {
 
                 bs.performAction();
 
+                if((bs.getTimeElapsed()%preciseInterval >= 0. && bs.getTimeElapsed()%preciseInterval <= 0.01) && !alreadyPreciselyRecorded &&
+                        preciseTimerCounter <= nTimeMeasurements){
+
+                    System.out.println("rep: "+r+"\ttime elapsed: "+String.valueOf(bs.getTimeElapsed())+"\tPRECISE");
+                    precisePopsOverTime[preciseTimerCounter] = bs.getSpatialDistributionArray();
+                    preciseGRatesOverTime[preciseTimerCounter] = bs.getGrowthRatesArray();
+
+                    alreadyPreciselyRecorded = true;
+                    preciseTimerCounter++;
+                }
+                if(bs.getTimeElapsed()%preciseInterval >= 0.1) alreadyPreciselyRecorded = false;
+
+
+
                 if((bs.getTimeElapsed()%interval >= 0. && bs.getTimeElapsed()%interval <= 0.01) && !alreadyRecorded){
 
                     System.out.println("rep: "+r+"\ttime elapsed: "+String.valueOf(bs.getTimeElapsed()));
@@ -305,35 +332,58 @@ public class BioSystem {
 
             allMeasurements[r] = popsOverTime;
             allGRateMeasurements[r] = gRatesOverTime;
+            allPreciseMeasurements[r] = precisePopsOverTime;
+            allPreciseGRateMeasurements[r] = preciseGRatesOverTime;
         }
 
         double[][] averagedPopDistributions = Toolbox.averagedResults(allMeasurements);
         double[][] averagedGRateDistributions = Toolbox.averagedResults(allGRateMeasurements);
+        double[][] averagedPrecisePopDistributions = Toolbox.averagedResults(allPreciseMeasurements);
+        double[][] averagedPreciseGRateDistributions = Toolbox.averagedResults(allPreciseGRateMeasurements);
+
         Toolbox.printAveragedResultsToFile(filename, averagedPopDistributions);
         Toolbox.printAveragedResultsToFile(filename_gRate, averagedGRateDistributions);
+        Toolbox.printAveragedResultsToFile(filename_precise, averagedPrecisePopDistributions);
+        Toolbox.printAveragedResultsToFile(filename_gRate_precise, averagedPreciseGRateDistributions);
     }
+
+
 
 
     public static void exponentialGradient_spatialAndGRateDistributions(double input_alpha){
 
         int L = 500, nReps = 20;
         int nTimeMeasurements = 20;
+
         double duration = 2000., interval = duration/(double)nTimeMeasurements;
+        double preciseDuration = duration/5., preciseInterval = preciseDuration/(double)nTimeMeasurements;
+
         double alpha = input_alpha;
         int S = 500;
 
-        String filename = "slowGrowers-alpha="+String.valueOf(alpha)+"-spatialDistribution-FINAL";
-        String filename_gRate = "slowGrowers-alpha="+String.valueOf(alpha)+"-gRateDistribution-FINAL";
+        String filename = "simple-slowGrowers-alpha="+String.valueOf(alpha)+"-spatialDistribution-FINAL";
+        String filename_gRate = "simple-slowGrowers-alpha="+String.valueOf(alpha)+"-gRateDistribution-FINAL";
+        String filename_precise = "simple-slowGrowers-alpha="+String.valueOf(alpha)+"-spatialDistribution_precise-FINAL";
+        String filename_gRate_precise = "simple-slowGrowers-alpha="+String.valueOf(alpha)+"-gRateDistribution_precise-FINAL";
 
         int[][][] allMeasurements = new int[nReps][][];
         double[][][] allGRateMeasurements = new double[nReps][][];
 
+        int[][][] allPreciseMeasurements = new int[nReps][][];
+        double[][][] allPreciseGRateMeasurements = new double[nReps][][];
+
         for(int r = 0; r < nReps; r++){
 
-            boolean alreadyRecorded = false;
+            boolean alreadyRecorded = false, alreadyPreciselyRecorded = false;
+
             int[][] popsOverTime = new int[nTimeMeasurements+1][];
             double[][] gRatesOverTime = new double[nTimeMeasurements+1][];
             int timerCounter = 0;
+
+            int[][] precisePopsOverTime = new int[nTimeMeasurements+1][];
+            double[][] preciseGRatesOverTime = new double[nTimeMeasurements+1][];
+            int preciseTimerCounter = 0;
+
 
             BioSystem bs = new BioSystem(L, S, alpha);
 
@@ -341,6 +391,19 @@ public class BioSystem {
 
                 bs.performAction();
 
+                if((bs.getTimeElapsed()%preciseInterval >= 0. && bs.getTimeElapsed()%preciseInterval <= 0.01) && !alreadyPreciselyRecorded &&
+                        preciseTimerCounter <= nTimeMeasurements){
+
+                    System.out.println("rep: "+r+"\ttime elapsed: "+String.valueOf(bs.getTimeElapsed())+"\tPRECISE");
+                    precisePopsOverTime[preciseTimerCounter] = bs.getSpatialDistributionArray();
+                    preciseGRatesOverTime[preciseTimerCounter] = bs.getGrowthRatesArray();
+
+                    alreadyPreciselyRecorded = true;
+                    preciseTimerCounter++;
+                }
+                if(bs.getTimeElapsed()%preciseInterval >= 0.1) alreadyPreciselyRecorded = false;
+
+
                 if((bs.getTimeElapsed()%interval >= 0. && bs.getTimeElapsed()%interval <= 0.01) && !alreadyRecorded){
 
                     System.out.println("rep: "+r+"\ttime elapsed: "+String.valueOf(bs.getTimeElapsed()));
@@ -355,12 +418,19 @@ public class BioSystem {
 
             allMeasurements[r] = popsOverTime;
             allGRateMeasurements[r] = gRatesOverTime;
+            allPreciseMeasurements[r] = precisePopsOverTime;
+            allPreciseGRateMeasurements[r] = preciseGRatesOverTime;
         }
 
         double[][] averagedPopDistributions = Toolbox.averagedResults(allMeasurements);
         double[][] averagedGRateDistributions = Toolbox.averagedResults(allGRateMeasurements);
+        double[][] averagedPrecisePopDistributions = Toolbox.averagedResults(allPreciseMeasurements);
+        double[][] averagedPreciseGRateDistributions = Toolbox.averagedResults(allPreciseGRateMeasurements);
+
         Toolbox.printAveragedResultsToFile(filename, averagedPopDistributions);
         Toolbox.printAveragedResultsToFile(filename_gRate, averagedGRateDistributions);
+        Toolbox.printAveragedResultsToFile(filename_precise, averagedPrecisePopDistributions);
+        Toolbox.printAveragedResultsToFile(filename_gRate_precise, averagedPreciseGRateDistributions);
     }
 }
 
